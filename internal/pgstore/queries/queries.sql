@@ -8,7 +8,7 @@ RETURNING "id";
 SELECT 
   "id", "destination", "owner_email", "owner_name", "is_confirmed", "starts_at", "ends_at"
 FROM trips
-WHERE id = $1
+WHERE id = $1;
 
 -- name: UpdateTrip :exec
 UPDATE trips
@@ -24,18 +24,18 @@ WHERE id = $5;
 SELECT
   "id", "trip_id", "email", "is_confirmed"
 FROM participants
-WHERE id = $1
+WHERE id = $1;
 
 -- name: ConfirmParticipant :exec
 UPDATE participants
 SET "is_confirmed" = true
-WHERE id = $1
+WHERE id = $1;
 
 -- name: GetParticipants :many
 SELECT 
   "id", "trip_id", "email", "is_confirmed"
 FROM participants
-WHERE trip_id = $1
+WHERE trip_id = $1;
 
 
 -- name: InviteParticipantToTrip :one
@@ -58,7 +58,16 @@ RETURNING "id";
 
 -- name: GetActivities :many
 SELECT 
-  "id", "trip_id", "title", "occurs_at",
+  "id", "trip_id", "title", "occurs_at"
 FROM activities
-WHERE trip_id = $1
+WHERE trip_id = $1;
 
+-- name: CreateTripLink :one
+INSERT INTO links ( "trip_id", "title", "url" )
+VALUES ($1, $2, $3)
+RETURNING "id";
+
+-- name: GetTripLinks :many
+SELECT "id", "trip_id", "title", "url"
+FROM links
+WHERE trip_id = $1;
