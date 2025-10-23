@@ -1,17 +1,63 @@
 package api
 
 import (
+	"context"
+	"errors"
 	"net/http"
 
 	"github.com/DevKayoS/journey-go/internal/api/spec"
+	"github.com/DevKayoS/journey-go/internal/pgstore"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
-type API struct{}
+type store interface {
+	GetParticipant(ctx context.Context, participantID uuid.UUID) (pgstore.Participant, error)
+	ConfirmParticipant(ctx context.Context, participantID uuid.UUID) error
+}
 
-// Confirms a participant on a trip.
-// (PATCH /participants/{participantId}/confirm)
+type API struct {
+	store  store
+	logger *zap.Logger
+}
+
 func (a *API) PatchParticipantsParticipantIDConfirm(w http.ResponseWriter, r *http.Request, participantID string) *spec.Response {
-	panic("not implemented") // TODO: Implement
+	id, err := uuid.Parse(participantID)
+	if err != nil {
+		return spec.PatchParticipantsParticipantIDConfirmJSON400Response(spec.Error{
+			Message: "uuid invalido",
+		})
+	}
+
+	participant, err := a.store.GetParticipant(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return spec.PatchParticipantsParticipantIDConfirmJSON400Response(spec.Error{
+				Message: "participant nao encontrado",
+			})
+		}
+
+		a.logger.Error("failed to get participant", zap.Error(err), zap.String("participant_id", participantID))
+		return spec.PatchParticipantsParticipantIDConfirmJSON400Response(spec.Error{
+			Message: "something went wrong, try again",
+		})
+	}
+
+	if participant.IsConfirmed {
+		return spec.PatchParticipantsParticipantIDConfirmJSON400Response(spec.Error{
+			Message: "Participante ja esta confirmado",
+		})
+	}
+
+	if err := a.store.ConfirmParticipant(r.Context(), participant.ID); err != nil {
+		a.logger.Error("failed to confirm participant", zap.Error(err), zap.String("participant_id", participantID))
+		return spec.PatchParticipantsParticipantIDConfirmJSON400Response(spec.Error{
+			Message: "something went wrong, try again",
+		})
+	}
+
+	return spec.PatchParticipantsParticipantIDConfirmJSON204Response(nil)
 }
 
 // Create a new trip
