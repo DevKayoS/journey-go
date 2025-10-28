@@ -2,11 +2,16 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/DevKayoS/journey-go/internal/api"
+	"github.com/DevKayoS/journey-go/internal/api/spec"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -62,11 +67,44 @@ func run(ctx context.Context) error {
 
 	r := chi.NewMux()
 	r.Use(middleware.RequestID, middleware.Recoverer, httputils.ChiLogger(logger))
+	si := api.NewApi(pool, logger)
 
-	// TODO: terminar as configuracoes do main
+	r.Mount("/", spec.Handler(&si))
+
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      r,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+	}
+
+	defer func() {
+		const timeout = 30 * time.Second
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+		defer cancel()
+
+		if err := server.Shutdown(ctx); err != nil {
+			logger.Error("failed to Shutdown server", zap.Error(err))
+		}
+	}()
+
+	errChan := make(chan error, 1)
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			errChan <- err
+		}
+	}()
 
 	select {
 	case <-ctx.Done():
 		return nil
+	case err := <-errChan:
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
 	}
+
+	return nil
 }
