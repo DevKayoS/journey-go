@@ -30,9 +30,9 @@ RETURNING "id"
 `
 
 type CreateActivityParams struct {
-	TripID   uuid.UUID
-	Title    string
-	OccursAt pgtype.Timestamp
+	TripID   uuid.UUID        `json:"trip_id"`
+	Title    string           `json:"title"`
+	OccursAt pgtype.Timestamp `json:"occurs_at"`
 }
 
 func (q *Queries) CreateActivity(ctx context.Context, arg CreateActivityParams) (uuid.UUID, error) {
@@ -49,9 +49,9 @@ RETURNING "id"
 `
 
 type CreateTripLinkParams struct {
-	TripID uuid.UUID
-	Title  string
-	Url    string
+	TripID uuid.UUID `json:"trip_id"`
+	Title  string    `json:"title"`
+	Url    string    `json:"url"`
 }
 
 func (q *Queries) CreateTripLink(ctx context.Context, arg CreateTripLinkParams) (uuid.UUID, error) {
@@ -204,11 +204,11 @@ RETURNING "id"
 `
 
 type InsertTripParams struct {
-	Destination string
-	OwnerEmail  string
-	OwnerName   string
-	StartsAt    pgtype.Timestamp
-	EndsAt      pgtype.Timestamp
+	Destination string           `json:"destination"`
+	OwnerEmail  string           `json:"owner_email"`
+	OwnerName   string           `json:"owner_name"`
+	StartsAt    pgtype.Timestamp `json:"starts_at"`
+	EndsAt      pgtype.Timestamp `json:"ends_at"`
 }
 
 func (q *Queries) InsertTrip(ctx context.Context, arg InsertTripParams) (uuid.UUID, error) {
@@ -231,8 +231,8 @@ RETURNING "id"
 `
 
 type InviteParticipantToTripParams struct {
-	TripID uuid.UUID
-	Email  string
+	TripID uuid.UUID `json:"trip_id"`
+	Email  string    `json:"email"`
 }
 
 func (q *Queries) InviteParticipantToTrip(ctx context.Context, arg InviteParticipantToTripParams) (uuid.UUID, error) {
@@ -243,8 +243,8 @@ func (q *Queries) InviteParticipantToTrip(ctx context.Context, arg InvitePartici
 }
 
 type InviteParticipantsToTripParams struct {
-	TripID uuid.UUID
-	Email  string
+	TripID uuid.UUID `json:"trip_id"`
+	Email  string    `json:"email"`
 }
 
 const updateTrip = `-- name: UpdateTrip :exec
@@ -259,11 +259,11 @@ WHERE id = $5
 `
 
 type UpdateTripParams struct {
-	Destination string
-	EndsAt      pgtype.Timestamp
-	StartsAt    pgtype.Timestamp
-	IsConfirmed bool
-	ID          uuid.UUID
+	Destination string           `json:"destination"`
+	EndsAt      pgtype.Timestamp `json:"ends_at"`
+	StartsAt    pgtype.Timestamp `json:"starts_at"`
+	IsConfirmed bool             `json:"is_confirmed"`
+	ID          uuid.UUID        `json:"id"`
 }
 
 func (q *Queries) UpdateTrip(ctx context.Context, arg UpdateTripParams) error {

@@ -10,32 +10,32 @@ import (
 )
 
 type Activity struct {
-	ID       uuid.UUID
-	TripID   uuid.UUID
-	Title    string
-	OccursAt pgtype.Timestamp
+	ID       uuid.UUID        `json:"id"`
+	TripID   uuid.UUID        `json:"trip_id"`
+	Title    string           `json:"title"`
+	OccursAt pgtype.Timestamp `json:"occurs_at"`
 }
 
 type Link struct {
-	ID     uuid.UUID
-	TripID uuid.UUID
-	Title  string
-	Url    string
+	ID     uuid.UUID `json:"id"`
+	TripID uuid.UUID `json:"trip_id"`
+	Title  string    `json:"title"`
+	Url    string    `json:"url"`
 }
 
 type Participant struct {
-	ID          uuid.UUID
-	TripID      uuid.UUID
-	Email       string
-	IsConfirmed bool
+	ID          uuid.UUID `json:"id"`
+	TripID      uuid.UUID `json:"trip_id"`
+	Email       string    `json:"email"`
+	IsConfirmed bool      `json:"is_confirmed"`
 }
 
 type Trip struct {
-	ID          uuid.UUID
-	Destination string
-	OwnerEmail  string
-	OwnerName   string
-	IsConfirmed bool
-	StartsAt    pgtype.Timestamp
-	EndsAt      pgtype.Timestamp
+	ID          uuid.UUID        `json:"id"`
+	Destination string           `json:"destination"`
+	OwnerEmail  string           `json:"owner_email"`
+	OwnerName   string           `json:"owner_name"`
+	IsConfirmed bool             `json:"is_confirmed"`
+	StartsAt    pgtype.Timestamp `json:"starts_at"`
+	EndsAt      pgtype.Timestamp `json:"ends_at"`
 }
