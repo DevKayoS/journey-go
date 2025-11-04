@@ -20,7 +20,7 @@ func (q *Queries) CreateTrip(
 		return uuid.UUID{}, fmt.Errorf("pgstore: failed to begin trx for CreateTrip: %w", err)
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	qtx := q.WithTx(tx)
 

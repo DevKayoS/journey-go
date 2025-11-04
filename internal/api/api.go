@@ -16,6 +16,7 @@ import (
 )
 
 type store interface {
+	CreateTrip(ctx context.Context, pool *pgxpool.Pool, params spec.CreateTripRequest) (uuid.UUID, error)
 	GetParticipant(ctx context.Context, participantID uuid.UUID) (pgstore.Participant, error)
 	ConfirmParticipant(ctx context.Context, participantID uuid.UUID) error
 }
@@ -79,7 +80,7 @@ func (a *API) PostTrips(w http.ResponseWriter, r *http.Request) *spec.Response {
 	var body spec.CreateTripRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		return spec.PostTripsJSON400Response(spec.Error{
-			Message: "invalid JSON",
+			Message: "invalid JSON: " + err.Error(),
 		})
 	}
 
@@ -89,8 +90,15 @@ func (a *API) PostTrips(w http.ResponseWriter, r *http.Request) *spec.Response {
 		})
 	}
 
+	tripID, err := a.store.CreateTrip(r.Context(), a.pool, body)
+	if err != nil {
+		return spec.PostTripsJSON400Response(spec.Error{
+			Message: "failed to create a trip, try again",
+		})
+	}
+
 	return spec.PostTripsJSON201Response(spec.CreateTripResponse{
-		TripID: "1",
+		TripID: tripID.String(),
 	})
 }
 
