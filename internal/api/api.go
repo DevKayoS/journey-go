@@ -21,20 +21,26 @@ type store interface {
 	ConfirmParticipant(ctx context.Context, participantID uuid.UUID) error
 }
 
+type mailer interface {
+	SendConfirmTripEmailToTripOwner(tripID uuid.UUID) error
+}
+
 type API struct {
 	store     store
 	logger    *zap.Logger
 	validator *validator.Validate
 	pool      *pgxpool.Pool
+	mailer    mailer
 }
 
-func NewApi(pool *pgxpool.Pool, logger *zap.Logger) API {
+func NewApi(pool *pgxpool.Pool, logger *zap.Logger, mailer mailer) API {
 	validator := validator.New(validator.WithRequiredStructEnabled())
 	return API{
 		store:     pgstore.New(pool),
 		logger:    logger,
 		validator: validator,
 		pool:      pool,
+		mailer:    mailer,
 	}
 }
 
@@ -96,6 +102,17 @@ func (a *API) PostTrips(w http.ResponseWriter, r *http.Request) *spec.Response {
 			Message: "failed to create a trip, try again",
 		})
 	}
+
+	// enviar de forma assincrona
+	go func() {
+		if err := a.mailer.SendConfirmTripEmailToTripOwner(tripID); err != nil {
+			a.logger.Error(
+				"[PostTrips] failed to send email",
+				zap.Error(err),
+				zap.String("trip_id", tripID.String()),
+			)
+		}
+	}()
 
 	return spec.PostTripsJSON201Response(spec.CreateTripResponse{
 		TripID: tripID.String(),

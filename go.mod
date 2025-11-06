@@ -12,6 +12,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/joho/godotenv v1.5.1
 	github.com/phenpessoa/gutils v0.0.0-20240130030144-d391b9329afd
+	github.com/wneessen/go-mail v0.7.2
 	go.uber.org/zap v1.27.0
 )
 
@@ -32,7 +33,6 @@ require (
 	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
-	github.com/wneessen/go-mail v0.7.2 // indirect
 	github.com/woodsbury/decimal128 v1.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
